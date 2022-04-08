@@ -57,6 +57,7 @@ ARGUMENT_REGEXES = {
     'dedent': re.compile(r'dedent=(\w*)'),
     'heading-offset': re.compile(r'heading-offset=(-?\d+)'),
     'exclude': re.compile(r'exclude="([^"]+)"'),
+    'by-header': re.compile(r'by-header=#[\w\s\-#]+?')
 }
 
 

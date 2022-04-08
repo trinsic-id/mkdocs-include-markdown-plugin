@@ -1,4 +1,4 @@
-'''Tests for multiple inclusions across directives.'''
+"""Tests for multiple inclusions across directives."""
 
 import os
 

@@ -89,12 +89,12 @@ MARKDOWN_LINK_DEFINITION_REGEX = re.compile(
 
 
 def transform_p_by_p_skipping_codeblocks(markdown, func):
-    '''Apply a transformation paragraph by paragraph in a Markdown text using
+    """Apply a transformation paragraph by paragraph in a Markdown text using
     a function.
 
     Skip indented and fenced codeblock lines, where the transformation never is
     applied.
-    '''
+    """
     _inside_fcodeblock = False            # inside fenced codeblock
     _current_fcodeblock_delimiter = None  # current fenced codeblock delimiter
     _inside_icodeblock = False            # inside indented codeblock
@@ -145,11 +145,11 @@ def transform_p_by_p_skipping_codeblocks(markdown, func):
 
 
 def transform_line_by_line_skipping_codeblocks(markdown, func):
-    '''Apply a transformation line by line in a Markdown text using a function.
+    """Apply a transformation line by line in a Markdown text using a function.
 
     Skip indented and fenced codeblock lines, where the transformation never is
     applied.
-    '''
+    """
     _inside_fcodeblock = False            # inside fenced codeblock
     _current_fcodeblock_delimiter = None  # current fenced codeblock delimiter
     _inside_icodeblock = False            # inside indented codeblock
@@ -188,10 +188,10 @@ def transform_line_by_line_skipping_codeblocks(markdown, func):
 def rewrite_relative_urls(
     markdown: str, source_path: Path, destination_path: Path,
 ) -> str:
-    '''Rewrites markdown so that relative links that were written at
+    """Rewrites markdown so that relative links that were written at
     ``source_path`` will still work when inserted into a file at
     ``destination_path``.
-    '''
+    """
     def rewrite_url(url: str) -> str:
         scheme, netloc, path, params, query, fragment = urlparse(url)
 
@@ -251,16 +251,16 @@ def rewrite_relative_urls(
 
 
 def interpret_escapes(value: str) -> str:
-    '''Replaces any standard escape sequences in value with their usual
+    """Replaces any standard escape sequences in value with their usual
     meanings as in ordinary python string literals.
-    '''
+    """
     return value.encode('latin-1', 'backslashreplace').decode('unicode_escape')
 
 
 def filter_inclusions(new_start, new_end, text_to_include):
-    '''Manages inclusions from files using ``start`` and ``end`` directive
+    """Manages inclusions from files using ``start`` and ``end`` directive
     arguments.
-    '''
+    """
     start = None
     end = None
     if new_start is not None:
@@ -286,7 +286,7 @@ def filter_inclusions(new_start, new_end, text_to_include):
 
 
 def increase_headings_offset(markdown, offset=0):
-    '''Increases the headings depth of a snippet of Makdown content.'''
+    """Increases the headings depth of a snippet of Makdown content."""
     if not offset:
         return markdown
     return transform_line_by_line_skipping_codeblocks(

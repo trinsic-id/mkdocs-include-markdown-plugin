@@ -1,4 +1,4 @@
-'''``include-markdown`` directive tests'''
+"""``include-markdown`` directive tests"""
 
 import textwrap
 
