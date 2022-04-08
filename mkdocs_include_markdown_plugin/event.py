@@ -1,4 +1,4 @@
-'''Module where the `on_page_markdown` plugin event is defined.'''
+"""Module where the `on_page_markdown` plugin event is defined."""
 
 import glob
 import html
@@ -64,48 +64,7 @@ def get_file_content(markdown, abs_src_path, cumulative_heading_offset=0):
     page_src_path = Path(abs_src_path)
 
     def found_include_tag(match):
-        filename = match.group('filename')
-        _includer_indent = match.group('_includer_indent')
-        arguments_string = match.group('arguments')
-
-        if os.path.isabs(filename):
-            file_path_glob = filename
-        else:
-            file_path_glob = os.path.abspath(
-                os.path.join(
-                    page_src_path.parent,
-                    filename,
-                ),
-            )
-
-        exclude_match = re.search(
-            ARGUMENT_REGEXES['exclude'],
-            arguments_string,
-        )
-        if exclude_match is None:
-            ignore_paths = []
-        else:
-            exclude_string = exclude_match.group(1)
-            if os.path.isabs(exclude_string):
-                exclude_globstr = exclude_string
-            else:
-                exclude_globstr = os.path.abspath(
-                    os.path.join(
-                        page_src_path.parent,
-                        exclude_string,
-                    ),
-                )
-            ignore_paths = glob.glob(exclude_globstr)
-
-        file_paths_to_include = process.filter_paths(
-            glob.glob(file_path_glob),
-            ignore_paths=ignore_paths,
-        )
-
-        if not file_paths_to_include:
-            raise FileNotFoundError(
-                f'Any files found using \'{filename}\' at {page_src_path}',
-            )
+        _includer_indent, arguments_string, file_paths_to_include, filename = find_includes_and_files(match)
 
         # handle options and regex modifiers
 
@@ -121,26 +80,7 @@ def get_file_content(markdown, abs_src_path, cumulative_heading_offset=0):
             },
         }
 
-        for opt_name, opt_data in bool_options.items():
-            match = re.search(opt_data['regex'], arguments_string)
-            if match is None:
-                continue
-            try:
-                bool_options[opt_name]['value'] = TRUE_FALSE_STR_BOOL[
-                    match.group(1) or TRUE_FALSE_BOOL_STR[opt_data['value']]
-                ]
-            except KeyError:
-                raise ValueError(
-                    f'Unknown value for \'{opt_name}\'. Possible values are:'
-                    ' true, false',
-                )
-
-        #   string options
-        start_match = re.search(ARGUMENT_REGEXES['start'], arguments_string)
-        end_match = re.search(ARGUMENT_REGEXES['end'], arguments_string)
-
-        start = None if not start_match else start_match.group(1)
-        end = None if not end_match else end_match.group(1)
+        end, start = get_option_matches(arguments_string, bool_options)
 
         text_to_include = ''
         for file_path in file_paths_to_include:
@@ -175,50 +115,29 @@ def get_file_content(markdown, abs_src_path, cumulative_heading_offset=0):
 
         return text_to_include
 
-    def found_include_markdown_tag(match):
-        # handle filename parameter and read content
-        filename = match.group('filename')
-        _includer_indent = match.group('_includer_indent')
-        arguments_string = match.group('arguments')
-
-        if os.path.isabs(filename):
-            file_path_glob = filename
-        else:
-            file_path_glob = os.path.abspath(
-                os.path.join(
-                    page_src_path.parent,
-                    filename,
-                ),
-            )
-
-        exclude_match = re.search(
-            ARGUMENT_REGEXES['exclude'],
-            arguments_string,
-        )
-        if exclude_match is None:
-            ignore_paths = []
-        else:
-            exclude_string = exclude_match.group(1)
-            if os.path.isabs(exclude_string):
-                exclude_globstr = exclude_string
-            else:
-                exclude_globstr = os.path.abspath(
-                    os.path.join(
-                        page_src_path.parent,
-                        exclude_string,
-                    ),
+    def get_option_matches(arguments_string, bool_options):
+        for opt_name, opt_data in bool_options.items():
+            match = re.search(opt_data['regex'], arguments_string)
+            if match is None:
+                continue
+            try:
+                bool_options[opt_name]['value'] = TRUE_FALSE_STR_BOOL[
+                    match.group(1) or TRUE_FALSE_BOOL_STR[opt_data['value']]
+                    ]
+            except KeyError:
+                raise ValueError(
+                    f'Unknown value for \'{opt_name}\'. Possible values are:'
+                    ' true, false',
                 )
-            ignore_paths = glob.glob(exclude_globstr)
+        #   string options
+        start_match = re.search(ARGUMENT_REGEXES['start'], arguments_string)
+        end_match = re.search(ARGUMENT_REGEXES['end'], arguments_string)
+        start = None if not start_match else start_match.group(1)
+        end = None if not end_match else end_match.group(1)
+        return end, start
 
-        file_paths_to_include = process.filter_paths(
-            glob.glob(file_path_glob),
-            ignore_paths=ignore_paths,
-        )
-
-        if not file_paths_to_include:
-            raise FileNotFoundError(
-                f'Any files found using \'{filename}\' at {page_src_path}',
-            )
+    def found_include_markdown_tag(match):
+        _includer_indent, arguments_string, file_paths_to_include, filename = find_includes_and_files(match)
 
         # handle options and regex modifiers
 
@@ -242,26 +161,7 @@ def get_file_content(markdown, abs_src_path, cumulative_heading_offset=0):
             },
         }
 
-        for opt_name, opt_data in bool_options.items():
-            match = re.search(opt_data['regex'], arguments_string)
-            if match is None:
-                continue
-            try:
-                bool_options[opt_name]['value'] = TRUE_FALSE_STR_BOOL[
-                    match.group(1) or TRUE_FALSE_BOOL_STR[opt_data['value']]
-                ]
-            except KeyError:
-                raise ValueError(
-                    f'Unknown value for \'{opt_name}\'. Possible values are:'
-                    ' true, false',
-                )
-
-        #   string options
-        start_match = re.search(ARGUMENT_REGEXES['start'], arguments_string)
-        end_match = re.search(ARGUMENT_REGEXES['end'], arguments_string)
-
-        start = None if not start_match else start_match.group(1)
-        end = None if not end_match else end_match.group(1)
+        end, start = get_option_matches(arguments_string, bool_options)
 
         # heading offset
         offset = 0
@@ -336,6 +236,48 @@ def get_file_content(markdown, abs_src_path, cumulative_heading_offset=0):
             + text_to_include
             + '\n' + _includer_indent + '<!-- END INCLUDE -->'
         )
+
+    def find_includes_and_files(match):
+        # handle filename parameter and read content
+        filename = match.group('filename')
+        _includer_indent = match.group('_includer_indent')
+        arguments_string = match.group('arguments')
+        if os.path.isabs(filename):
+            file_path_glob = filename
+        else:
+            file_path_glob = os.path.abspath(
+                os.path.join(
+                    page_src_path.parent,
+                    filename,
+                ),
+            )
+        exclude_match = re.search(
+            ARGUMENT_REGEXES['exclude'],
+            arguments_string,
+        )
+        if exclude_match is None:
+            ignore_paths = []
+        else:
+            exclude_string = exclude_match.group(1)
+            if os.path.isabs(exclude_string):
+                exclude_globstr = exclude_string
+            else:
+                exclude_globstr = os.path.abspath(
+                    os.path.join(
+                        page_src_path.parent,
+                        exclude_string,
+                    ),
+                )
+            ignore_paths = glob.glob(exclude_globstr)
+        file_paths_to_include = process.filter_paths(
+            glob.glob(file_path_glob),
+            ignore_paths=ignore_paths,
+        )
+        if not file_paths_to_include:
+            raise FileNotFoundError(
+                f'Any files found using \'{filename}\' at {page_src_path}',
+            )
+        return _includer_indent, arguments_string, file_paths_to_include, filename
 
     markdown = re.sub(
         INCLUDE_TAG_REGEX,

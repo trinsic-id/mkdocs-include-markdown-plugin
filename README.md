@@ -81,6 +81,8 @@ content to include.
 - <a name="include-markdown_exclude" href="#include-markdown_exclude">#</a>
  **exclude**: Specify with a glob which files should be ignored. Only useful
  when passing globs to include multiple files.
+- <a name="include-markdown_header" href="#include-markdown_header">#</a>
+ **header**: Specify with a glob which header section should be included
 
 > Note that **start** and **end** strings may contain usual (Python-style)
 escape sequences like `\n`, which is handy if you need to match on a multi-line
